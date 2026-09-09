@@ -24,6 +24,7 @@ public static class DependencyInjection
       .AddEntityFrameworkStores<AppDbContext>();
     
     services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+    services.AddScoped<IAccountRepository, AccountRepository>();
 
     return services;
   }
@@ -31,6 +32,7 @@ public static class DependencyInjection
   public static IServiceCollection AddApplication(this IServiceCollection services)
   {
     services.AddScoped<IAuthService, AuthService>();
+    services.AddScoped<IAccountService, AccountService>();
     return services;
   }
 }
