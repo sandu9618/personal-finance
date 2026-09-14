@@ -25,6 +25,7 @@ public static class DependencyInjection
     
     services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
     services.AddScoped<IAccountRepository, AccountRepository>();
+    services.AddScoped<ICategoryRepository, CategoryRepository>();
 
     return services;
   }
@@ -33,6 +34,7 @@ public static class DependencyInjection
   {
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<IAccountService, AccountService>();
+    services.AddScoped<ICategoryService, CategoryService>();
     return services;
   }
 }

@@ -67,9 +67,9 @@ public class AccountService : IAccountService
     return new AccountListResponse(accountResponses);
   }
 
-  public async Task<AccountResponse> UpdateAccountAsync(Guid accountId, AccountRequest request, CancellationToken cancellationToken)
+  public async Task<AccountResponse> UpdateAccountAsync(Guid accountId, Guid userId, AccountRequest request, CancellationToken cancellationToken)
   {
-    var account = await _accountRepository.GetByIdForUserAsync(accountId, Guid.Empty, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {accountId} not found.");
+    var account = await _accountRepository.GetByIdForUserAsync(accountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {accountId} not found.");
     account.Name = request.Name;
     account.Balance = request.InitialBalance;
     account.Type = request.Type;

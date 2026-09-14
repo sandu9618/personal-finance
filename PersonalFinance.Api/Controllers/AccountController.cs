@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PersonalFinance.Api;
 
 [ApiController]
 [Authorize]
@@ -17,56 +17,75 @@ public class AccountController : ControllerBase
   [HttpPost]
   public async Task<ActionResult<AccountResponse>> CreateAccount([FromBody] AccountRequest request, CancellationToken cancellationToken)
   {
-    var userId = GetUserIdFromClaims();
-    var response = await _accountService.CreateAccountAsync(request, userId, cancellationToken);
-    return CreatedAtAction(nameof(GetAccountById), new { accountId = response.Id }, response);
+    try
+    {
+      var userId = User.GetUserIdFromClaims();
+      var response = await _accountService.CreateAccountAsync(request, userId, cancellationToken);
+      return CreatedAtAction(nameof(GetAccountById), new { accountId = response.Id }, response);
+    }
+    catch (InvalidOperationException ex)
+    {
+      return BadRequest(new { message = ex.Message });
+    }
   }
 
   [HttpGet]
   public async Task<ActionResult<AccountListResponse>> GetAccounts(CancellationToken cancellationToken)
   {
-    var userId = GetUserIdFromClaims();
-    var response = await _accountService.GetAccountsAsync(userId, cancellationToken);
-    return Ok(response);
+    try
+    {
+      var userId = User.GetUserIdFromClaims();
+      var response = await _accountService.GetAccountsAsync(userId, cancellationToken);
+      return Ok(response);
+    }
+    catch (InvalidOperationException ex)
+    {
+      return BadRequest(new { message = ex.Message });
+    }
   }
 
   [HttpGet("{accountId}")]
   public async Task<ActionResult<AccountResponse>> GetAccountById(Guid accountId, CancellationToken cancellationToken)
   {
-    var userId = GetUserIdFromClaims();
-    var response = await _accountService.GetAccountByIdAsync(accountId, userId, cancellationToken);
-    if (response == null)
+    var userId = User.GetUserIdFromClaims();
+    try
+    {
+      var response = await _accountService.GetAccountByIdAsync(accountId, userId, cancellationToken);
+      return Ok(response);
+    }
+    catch (KeyNotFoundException)
     {
       return NotFound();
     }
-    return Ok(response);
   }
 
   [HttpPut("{accountId}")]
   public async Task<ActionResult<AccountResponse>> UpdateAccount(Guid accountId, [FromBody] AccountRequest request, CancellationToken cancellationToken)
   {
-    var userId = GetUserIdFromClaims();
-    var response = await _accountService.UpdateAccountAsync(accountId, request, cancellationToken);
-    return Ok(response);
+    var userId = User.GetUserIdFromClaims();
+    try
+    {
+      var response = await _accountService.UpdateAccountAsync(accountId, userId, request, cancellationToken);
+      return Ok(response);
+    }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
   }
 
   [HttpDelete("{accountId}")]
   public async Task<IActionResult> DeleteAccount(Guid accountId, CancellationToken cancellationToken)
   {
-    var userId = GetUserIdFromClaims();
-    await _accountService.DeleteAccountAsync(accountId, userId, cancellationToken);
-    return NoContent();
-  }
-
-  private Guid GetUserIdFromClaims()
-  {
-    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)
-    ?? User.FindFirst("sub");;
-    if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+    var userId = User.GetUserIdFromClaims();
+    try
     {
-      throw new InvalidOperationException("User ID claim is missing or invalid.");
+      await _accountService.DeleteAccountAsync(accountId, userId, cancellationToken);
+      return NoContent();
     }
-    return userId;
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
   }
-  
 }
