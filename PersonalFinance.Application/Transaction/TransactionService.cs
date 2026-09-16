@@ -45,7 +45,7 @@ public class TransactionService : ITransactionService
       Type = request.Type,
       Description = request.Description,
       TransactionDate = request.TransactionDate,
-      CreatedAt = new DateTime()
+      CreatedAt = DateTime.UtcNow
     };
 
     var signedAmount = Signed(request.Type, request.Amount);
