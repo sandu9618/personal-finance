@@ -25,7 +25,6 @@ public class AccountRepository : IAccountRepository
   public async Task<Account?> GetByIdForUserAsync(Guid accountId, Guid userId, CancellationToken cancellationToken)
   {
     return await _db.Accounts
-      .AsNoTracking()
       .FirstOrDefaultAsync(a => a.Id == accountId && a.UserId == userId, cancellationToken);
   }
 

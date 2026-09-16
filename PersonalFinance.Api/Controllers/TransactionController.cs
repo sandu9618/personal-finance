@@ -68,9 +68,9 @@ public class TransactionController : ControllerBase
       var response = await _transactionService.UpdateTransactionAsync(transactionId, userId, request, cancellationToken);
       return Ok(response);
     } 
-    catch (KeyNotFoundException)
+    catch (InvalidOperationException ex)
     {
-      return NotFound();
+      return BadRequest(new {message = ex.Message});
     }
   }
 

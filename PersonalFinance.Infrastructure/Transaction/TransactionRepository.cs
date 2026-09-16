@@ -25,7 +25,6 @@ public class TransactionRepository : ITransactionRepository
   public Task<Transaction?> GetByIdForUserAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
     return _db.Transactions
-      .AsNoTracking()
       .FirstOrDefaultAsync(t => t.UserId == userId && t.Id == transactionId, cancellationToken);
   }
 
