@@ -52,4 +52,11 @@ public static class DependencyInjection
     services.AddScoped<IDashboardService, DashboardService>();
     return services;
   }
+
+  public static async Task InitializeDatabaseAsync(this IServiceProvider services)
+  {
+    using var scope = services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+  }
 }

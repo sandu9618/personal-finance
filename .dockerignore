@@ -1,0 +1,17 @@
+**/.git
+**/.vs
+**/.idea
+**/.vscode
+**/.env
+**/.dockerignore
+**/bin
+**/obj
+**/node_modules
+**/*.user
+**/*.suo
+**/TestResults
+PersonalFinance.Tests
+README.md
+docker-compose*.yml
+Dockerfile*
+.env.example

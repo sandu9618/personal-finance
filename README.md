@@ -41,4 +41,17 @@ Identity handles authentication. Accounts, categories, and transactions are the 
 
 ## Stack
 
-ASP.NET Core, ASP.NET Core Identity, Entity Framework Core, PostgreSQL, and JWT authentication.
+ASP.NET Core, ASP.NET Core Identity, Entity Framework Core, PostgreSQL, JWT authentication, and a Razor Pages UI.
+
+## Run with Docker
+
+From this folder, with Docker running:
+
+```bash
+cp .env.example .env   # optional; change JWT_KEY before a real deploy
+docker compose up --build
+```
+
+Then open **http://localhost:8080** (the web app). The API is at **http://localhost:8082**. Postgres stays on the Compose network.
+
+The API applies EF migrations on startup. Stop with `docker compose down`. `docker compose down -v` also deletes the database volume.
