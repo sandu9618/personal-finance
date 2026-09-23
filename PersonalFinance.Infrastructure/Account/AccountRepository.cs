@@ -33,6 +33,11 @@ public class AccountRepository : IAccountRepository
     _db.Accounts.Remove(account);
   }
 
+  public Task<bool> HasTransactionsAsync(Guid accountId, CancellationToken cancellationToken)
+  {
+    return _db.Transactions.AnyAsync(t => t.AccountId == accountId, cancellationToken);
+  }
+
   public async Task SaveChangesAsync(CancellationToken cancellationToken)
   {
     await _db.SaveChangesAsync(cancellationToken);

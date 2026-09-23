@@ -25,7 +25,8 @@ public class AuthService : IAuthService
 
     if (!result.Succeeded)
     {
-      throw new InvalidOperationException("Failed to create user");
+      var message = string.Join(" ", result.Errors.Select(error => error.Description));
+      throw new InvalidOperationException(message);
     }
 
     var token = _jwtTokenGenerator.Generate(user, out var expiresAt);
@@ -39,7 +40,7 @@ public class AuthService : IAuthService
 
     if (user == null || !await _userManager.CheckPasswordAsync(user, password))
     {
-      throw new InvalidOperationException("Invalid email or password");
+      throw new UnauthorizedAccessException("Invalid email or password");
     }
 
     var token = _jwtTokenGenerator.Generate(user, out var expiresAt);

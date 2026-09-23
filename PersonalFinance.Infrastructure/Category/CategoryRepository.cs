@@ -34,6 +34,11 @@ public class CategoryRepository : ICategoryRepository
     _db.Categories.Remove(category);
   }
 
+  public Task<bool> HasTransactionsAsync(Guid categoryId, CancellationToken cancellationToken)
+  {
+    return _db.Transactions.AnyAsync(t => t.CategoryId == categoryId, cancellationToken);
+  }
+
   public async Task SaveChangesAsync(CancellationToken cancellationToken)
   {
     await _db.SaveChangesAsync(cancellationToken);

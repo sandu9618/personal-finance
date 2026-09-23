@@ -32,9 +32,9 @@ public  class AuthController : ControllerBase
       var response = await _authService.Login(request.Email, request.Password);
       return Ok(response);  
     }
-    catch (InvalidOperationException ex)
+    catch (UnauthorizedAccessException ex)
     {
-      return BadRequest(new { message = ex.Message });
+      return Unauthorized(new { message = ex.Message });
     }
   }
   

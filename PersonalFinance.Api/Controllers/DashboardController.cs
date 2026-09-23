@@ -21,6 +21,10 @@ public class DashboardController : ControllerBase
       var response = await _dashboardService.GetDashboardSummary(userId, cancellationToken);
       return Ok(response);
     }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Unauthorized(new { message = ex.Message });
+    }
     catch (InvalidOperationException ex)
     {
       return BadRequest(new { message = ex.Message });

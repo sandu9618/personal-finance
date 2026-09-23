@@ -11,7 +11,7 @@ public static class ControllerHelper
 
     if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
     {
-      throw new InvalidOperationException("User ID claim is missing or invalid.");
+      throw new UnauthorizedAccessException("User ID claim is missing or invalid.");
     }
 
     return userId;

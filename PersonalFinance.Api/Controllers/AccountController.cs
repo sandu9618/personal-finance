@@ -23,6 +23,10 @@ public class AccountController : ControllerBase
       var response = await _accountService.CreateAccountAsync(request, userId, cancellationToken);
       return CreatedAtAction(nameof(GetAccountById), new { accountId = response.Id }, response);
     }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Unauthorized(new { message = ex.Message });
+    }
     catch (InvalidOperationException ex)
     {
       return BadRequest(new { message = ex.Message });
@@ -38,6 +42,10 @@ public class AccountController : ControllerBase
       var response = await _accountService.GetAccountsAsync(userId, cancellationToken);
       return Ok(response);
     }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Unauthorized(new { message = ex.Message });
+    }
     catch (InvalidOperationException ex)
     {
       return BadRequest(new { message = ex.Message });
@@ -47,45 +55,61 @@ public class AccountController : ControllerBase
   [HttpGet("{accountId}")]
   public async Task<ActionResult<AccountResponse>> GetAccountById(Guid accountId, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       var response = await _accountService.GetAccountByIdAsync(accountId, userId, cancellationToken);
       return Ok(response);
     }
-    catch (KeyNotFoundException)
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new { message = ex.Message });
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new { message = ex.Message });
     }
   }
 
   [HttpPut("{accountId}")]
   public async Task<ActionResult<AccountResponse>> UpdateAccount(Guid accountId, [FromBody] AccountRequest request, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       var response = await _accountService.UpdateAccountAsync(accountId, userId, request, cancellationToken);
       return Ok(response);
     }
-    catch (KeyNotFoundException)
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new { message = ex.Message });
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new { message = ex.Message });
     }
   }
 
   [HttpDelete("{accountId}")]
   public async Task<IActionResult> DeleteAccount(Guid accountId, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       await _accountService.DeleteAccountAsync(accountId, userId, cancellationToken);
       return NoContent();
     }
-    catch (KeyNotFoundException)
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new { message = ex.Message });
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new { message = ex.Message });
+    }
+    catch (InvalidOperationException ex)
+    {
+      return Conflict(new { message = ex.Message });
     }
   }
 }

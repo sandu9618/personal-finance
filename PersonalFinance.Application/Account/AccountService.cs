@@ -37,6 +37,11 @@ public class AccountService : IAccountService
   public async Task DeleteAccountAsync(Guid accountId, Guid userId, CancellationToken cancellationToken)
   {
     var account = await _accountRepository.GetByIdForUserAsync(accountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {accountId} not found.");
+    if (await _accountRepository.HasTransactionsAsync(accountId, cancellationToken))
+    {
+      throw new InvalidOperationException("Account cannot be deleted while it has transactions.");
+    }
+
     _accountRepository.Remove(account);
     await _accountRepository.SaveChangesAsync(cancellationToken);
   }

@@ -33,6 +33,11 @@ public class CategoryService : ICategoryService
   public async Task DeleteCategoryAsync(Guid categoryId, Guid userId, CancellationToken cancellationToken)
   {
     var category = await _categoryRepository.GetByIdForUserAsync(categoryId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Category with ID {categoryId} not found");
+    if (await _categoryRepository.HasTransactionsAsync(categoryId, cancellationToken))
+    {
+      throw new InvalidOperationException("Category cannot be deleted while it has transactions.");
+    }
+
     _categoryRepository.Remove(category);
     await _categoryRepository.SaveChangesAsync(cancellationToken);
   }

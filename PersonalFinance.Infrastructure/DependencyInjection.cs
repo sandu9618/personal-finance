@@ -19,7 +19,17 @@ public static class DependencyInjection
       options.UseNpgsql(connecctionString));
     
     services
-      .AddIdentityCore<ApplicationUser>()
+      .AddIdentityCore<ApplicationUser>(options =>
+      {
+        options.Password.RequiredLength = 6;
+        options.Password.RequiredUniqueChars = 1;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+
+        options.User.RequireUniqueEmail = true;
+      })
       .AddRoles<IdentityRole<Guid>>()
       .AddEntityFrameworkStores<AppDbContext>();
     

@@ -7,4 +7,5 @@ public interface IAccountRepository
   Task<IReadOnlyList<Account>> GetAllForUserAsync(Guid userId, CancellationToken cancellationToken);
   Task SaveChangesAsync(CancellationToken cancellationToken);
   void Remove(Account account);
+  Task<bool> HasTransactionsAsync(Guid accountId, CancellationToken cancellationToken);
 }

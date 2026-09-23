@@ -27,8 +27,8 @@ public class TransactionService : ITransactionService
       throw new InvalidOperationException("Amount must be greater than zero.");
     }
 
-    var account = await _accountRepository.GetByIdForUserAsync(request.AccountId, userId, cancellationToken) ?? throw new InvalidOperationException($"Account with ID {request.AccountId} not found");
-    var category = await _categoryRepository.GetByIdForUserAsync(request.CategoryId, userId, cancellationToken) ?? throw new InvalidOperationException($"Category with ID {request.CategoryId} not found");
+    var account = await _accountRepository.GetByIdForUserAsync(request.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {request.AccountId} not found");
+    var category = await _categoryRepository.GetByIdForUserAsync(request.CategoryId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Category with ID {request.CategoryId} not found");
 
     if (category.Type != request.Type)
     {
@@ -69,9 +69,9 @@ public class TransactionService : ITransactionService
 
   public async Task DeleteTransactionAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
-    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException();
+    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
     var signedAmount = Signed(transaction.Type, transaction.Amount);
-    var account = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new InvalidOperationException($"Account with ID {transaction.AccountId} not found");
+    var account = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {transaction.AccountId} not found");
 
     await _unitOfWork.ExecuteAsync(async ct =>
     {
@@ -97,7 +97,7 @@ public class TransactionService : ITransactionService
 
   public async Task<TransactionResponse> GetTransactionByIdAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
-    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException();
+    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
     return new TransactionResponse(
       transaction.Id,
       transaction.AccountId,
@@ -111,21 +111,21 @@ public class TransactionService : ITransactionService
 
   public async Task<TransactionResponse> UpdateTransactionAsync(Guid transactionId, Guid userId, TransactionRequest request, CancellationToken cancellationToken)
   {
+    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
+
     if (request.Amount <= 0)
     {
       throw new InvalidOperationException("Amount must be greater than zero");
     }
 
-    var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException();
-
     var oldSignedAmount = Signed(transaction.Type, transaction.Amount);
 
-    var oldAccount = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new InvalidOperationException($"Account not found with ID {transaction.AccountId}");
+    var oldAccount = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account not found with ID {transaction.AccountId}");
     var newAccount = transaction.AccountId == request.AccountId 
                       ? oldAccount 
                       : await _accountRepository.GetByIdForUserAsync(request.AccountId, userId, cancellationToken)
-                      ?? throw new InvalidOperationException($"Account not found with ID {request.AccountId}");
-    var category = await _categoryRepository.GetByIdForUserAsync(request.CategoryId, userId, cancellationToken) ?? throw new InvalidOperationException($"Category with ID {request.CategoryId} not found.");
+                      ?? throw new KeyNotFoundException($"Account not found with ID {request.AccountId}");
+    var category = await _categoryRepository.GetByIdForUserAsync(request.CategoryId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Category with ID {request.CategoryId} not found.");
 
     var newSignedAmount = Signed(request.Type, request.Amount);
 

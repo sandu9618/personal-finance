@@ -22,7 +22,11 @@ public class CategoryController : ControllerBase
       var userId = User.GetUserIdFromClaims();
       var response = await _categoryService.createCategoryAsync(request, userId, cancellationToken);
       return CreatedAtAction(nameof(GetCategoryById), new {categoryId = response.id}, response); 
-    } 
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Unauthorized(new {message = ex.Message});
+    }
     catch (InvalidOperationException ex)
     {
       return BadRequest(new {message = ex.Message});
@@ -37,7 +41,11 @@ public class CategoryController : ControllerBase
       var userId = User.GetUserIdFromClaims();
       var response = await _categoryService.GetCategoryAsync(userId, cancellationToken);
       return Ok(response);
-    } 
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+      return Unauthorized(new {message = ex.Message});
+    }
     catch (InvalidOperationException ex)
     {
       return BadRequest(new {message = ex.Message});
@@ -47,45 +55,61 @@ public class CategoryController : ControllerBase
   [HttpGet("{categoryId}")]
   public async Task<ActionResult<CategoryResponse>> GetCategoryById(Guid categoryId, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       var response = await _categoryService.GetCategoryByIdAsync(categoryId, userId, cancellationToken);
       return Ok(response);
     }
-    catch (KeyNotFoundException)
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new {message = ex.Message});
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new {message = ex.Message});
     }
   }
 
   [HttpPut("{categoryId}")]
   public async Task<ActionResult<CategoryResponse>> UpdateCategory(Guid categoryId, [FromBody] CategoryRequest request, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       var response = await _categoryService.UpdateCategoryAsync(categoryId, userId, request, cancellationToken);
       return Ok(response);
-    } 
-    catch (KeyNotFoundException)
+    }
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new {message = ex.Message});
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new {message = ex.Message});
     }
   }
 
   [HttpDelete("{categoryId}")]
   public async Task<ActionResult> DeleteCategory(Guid categoryId, CancellationToken cancellationToken)
   {
-    var userId = User.GetUserIdFromClaims();
     try
     {
+      var userId = User.GetUserIdFromClaims();
       await _categoryService.DeleteCategoryAsync(categoryId, userId, cancellationToken);
       return NoContent();
-    } 
-    catch (KeyNotFoundException)
+    }
+    catch (UnauthorizedAccessException ex)
     {
-      return NotFound();
+      return Unauthorized(new {message = ex.Message});
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(new {message = ex.Message});
+    }
+    catch (InvalidOperationException ex)
+    {
+      return Conflict(new { message = ex.Message });
     }
   }
 

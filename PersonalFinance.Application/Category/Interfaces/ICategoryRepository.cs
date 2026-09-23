@@ -7,4 +7,5 @@ public interface ICategoryRepository
   Task<IReadOnlyList<Category>> GetAllForUserAsync(Guid userId, CancellationToken cancellationToken);
   Task SaveChangesAsync(CancellationToken cancellationToken);
   void Remove(Category category);
+  Task<bool> HasTransactionsAsync(Guid categoryId, CancellationToken cancellationToken);
 }
