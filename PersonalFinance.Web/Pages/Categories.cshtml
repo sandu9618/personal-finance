@@ -1,0 +1,63 @@
+@page
+@model CategoriesModel
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<h1>Categories</h1>
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <p class="text-danger">@Model.Error</p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Categories.Length == 0)
+        {
+            <tr>
+                <td colspan="3">No categories yet.</td>
+            </tr>
+        }
+        @foreach (var category in Model.Categories)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>@category.Type</td>
+                <td>
+                    <a asp-page="/Categories" asp-route-id="@category.Id">Edit</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@category.Id" class="d-inline">
+                        <button type="submit" class="btn btn-link p-0 align-baseline">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>@(Model.Id is null ? "New category" : "Edit category")</h2>
+<form method="post">
+    @if (Model.Id is Guid id)
+    {
+        <input type="hidden" name="id" value="@id" />
+    }
+    <div class="mb-3">
+        <label asp-for="Input.Name"></label>
+        <input asp-for="Input.Name" class="form-control" maxlength="100" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Type"></label>
+        <select asp-for="Input.Type" asp-items="Html.GetEnumSelectList<TransactionType>()" class="form-select"></select>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    @if (Model.Id is not null)
+    {
+        <a asp-page="/Categories" class="ms-2">Cancel</a>
+    }
+</form>
