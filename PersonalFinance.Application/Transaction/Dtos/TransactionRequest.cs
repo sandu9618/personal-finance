@@ -4,11 +4,11 @@ using PersonalFinance.Domain.Enums;
 public record TransactionRequest(
   Guid AccountId,
   Guid CategoryId,
-  [property: Range(typeof(decimal), "0.01", "9999999999999999.99")]
+  [Range(typeof(decimal), "0.01", "9999999999999999.99")]
   decimal Amount,
-  [property: DefinedEnum]
+  [DefinedEnum]
   TransactionType Type,
-  [property: MaxLength(500)]
+  [MaxLength(500)]
   string? Description,
   DateTime TransactionDate
 ) : IValidatableObject
