@@ -25,7 +25,6 @@ public class CategoryRepository : ICategoryRepository
   public Task<Category?> GetByIdForUserAsync(Guid categoryId, Guid userId, CancellationToken cancellationToken)
   {
     return _db.Categories
-      .AsNoTracking()
       .FirstOrDefaultAsync(c => c.UserId == userId && c.Id == categoryId, cancellationToken);
   }
 
