@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="~/PersonalFinance.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="container py-5">
-        <main role="main" class="pb-3">
+    <div class="container">
+        <main role="main" class="auth-wrap">
+            <a class="auth-mark" asp-page="/Login">Personal Finance</a>
             @RenderBody()
         </main>
     </div>

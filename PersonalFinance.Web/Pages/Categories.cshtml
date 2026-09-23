@@ -10,6 +10,7 @@
     <p class="text-danger">@Model.Error</p>
 }
 
+<section class="panel">
 <table class="table">
     <thead>
         <tr>
@@ -40,9 +41,11 @@
         }
     </tbody>
 </table>
+</section>
 
+<section class="panel panel-form">
 <h2>@(Model.Id is null ? "New category" : "Edit category")</h2>
-<form method="post">
+<form method="post" class="editor">
     @if (Model.Id is Guid id)
     {
         <input type="hidden" name="id" value="@id" />
@@ -61,3 +64,4 @@
         <a asp-page="/Categories" class="ms-2">Cancel</a>
     }
 </form>
+</section>
