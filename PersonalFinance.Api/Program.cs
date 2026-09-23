@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PersonalFinance.Infrastructure;
 
-DotNetEnv.Env.Load();
+if (File.Exists(".env"))
+{
+    DotNetEnv.Env.Load();
+}
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -34,17 +37,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+await app.Services.InitializeDatabaseAsync();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok());
 
 app.Run();
+
+public partial class Program { }
