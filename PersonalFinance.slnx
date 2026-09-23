@@ -4,4 +4,5 @@
   <Project Path="PersonalFinance.Domain/PersonalFinance.Domain.csproj" />
   <Project Path="PersonalFinance.Infrastructure/PersonalFinance.Infrastructure.csproj" />
   <Project Path="PersonalFinance.Tests/PersonalFinance.Tests.csproj" />
+  <Project Path="PersonalFinance.Web/PersonalFinance.Web.csproj" />
 </Solution>
