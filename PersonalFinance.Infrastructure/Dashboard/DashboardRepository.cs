@@ -10,17 +10,22 @@ public class DashboardRepository : IDashboardRepository
   }
   public async Task<IReadOnlyList<ExpenseByCategoryDto>> GetExpensesByCategoryAsync(Guid userId, CancellationToken cancellationToken)
   {
-    return await _dbContext.Transactions
+    var rows = await _dbContext.Transactions
       .AsNoTracking()
       .Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
-      .GroupBy(t => new {t.CategoryId, t.Category.Name})
-      .Select(g => new ExpenseByCategoryDto(
+      .GroupBy(t => new { t.CategoryId, t.Category.Name })
+      .Select(g => new
+      {
         g.Key.CategoryId,
         g.Key.Name,
-        g.Sum(t => t.Amount)
-      ))
+        Total = g.Sum(t => t.Amount)
+      })
       .OrderByDescending(x => x.Total)
       .ToListAsync(cancellationToken);
+
+    return rows
+      .Select(row => new ExpenseByCategoryDto(row.CategoryId, row.Name, row.Total))
+      .ToList();
   }
 
   public async Task<IReadOnlyList<TransactionResponse>> GetRecentTransactionsForUserAsync(Guid userId, CancellationToken cancellationToken)
