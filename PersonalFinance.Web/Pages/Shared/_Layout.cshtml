@@ -48,6 +48,9 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentPage == "/Transactions" ? "active" : null)" asp-page="/Transactions">Transactions</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentPage == "/Transfers" ? "active" : null)" asp-page="/Transfers">Transfers</a>
+                            </li>
                         </ul>
                         <span class="navbar-text me-3">@User.Identity.Name</span>
                         <form method="post" asp-page="/Logout" class="d-flex">

@@ -37,13 +37,19 @@ public class TransactionsModel : FinancePageModel
             if (id is Guid transactionId)
             {
                 var transaction = Transactions.FirstOrDefault(item => item.Id == transactionId);
+                if (transaction is not null && !CanChange(transaction))
+                {
+                    SaveError("Transfer transactions can only be changed with their transfer.");
+                    return RedirectToPage();
+                }
+
                 if (transaction is not null)
                 {
                     Id = transaction.Id;
                     Input = new TransactionInput
                     {
                         AccountId = transaction.AccountId,
-                        CategoryId = transaction.CategoryId,
+                        CategoryId = transaction.CategoryId ?? Guid.Empty,
                         Amount = transaction.Amount,
                         Type = transaction.Type,
                         Description = transaction.Description,
@@ -121,11 +127,16 @@ public class TransactionsModel : FinancePageModel
         }
     }
 
+    public bool CanChange(TransactionResponse transaction) =>
+        transaction.Type is not (TransactionType.TransferIn or TransactionType.TransferOut);
+
     public string AccountName(Guid accountId) =>
         Accounts.FirstOrDefault(account => account.Id == accountId)?.Name ?? "Unknown account";
 
-    public string CategoryName(Guid categoryId) =>
-        Categories.FirstOrDefault(category => category.Id == categoryId)?.Name ?? "Unknown category";
+    public string CategoryName(Guid? categoryId) =>
+        categoryId is Guid id
+            ? Categories.FirstOrDefault(category => category.Id == id)?.Name ?? "Unknown category"
+            : "";
 
     public string Money(TransactionResponse transaction)
     {

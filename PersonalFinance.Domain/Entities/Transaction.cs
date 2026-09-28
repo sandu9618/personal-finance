@@ -15,6 +15,6 @@ public class Transaction
   public DateTime CreatedAt { get; set; }
   public ApplicationUser User { get; set; } = null!;
   public Account Account { get; set; } = null!;
-  public Category Category { get; set; } = null!;
-  public Transfer Transfer { get; set; } = null!;
+  public Category? Category { get; set; }
+  public Transfer? Transfer { get; set; }
 }

@@ -1,0 +1,85 @@
+@page
+@model TransfersModel
+@{
+    ViewData["Title"] = "Transfers";
+}
+
+<h1>Transfers</h1>
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <p class="text-danger">@Model.Error</p>
+}
+
+<section class="panel">
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Transfers.Length == 0)
+        {
+            <tr>
+                <td colspan="6">No transfers yet.</td>
+            </tr>
+        }
+        @foreach (var transfer in Model.Transfers)
+        {
+            <tr>
+                <td>@transfer.TransferDate.ToString("yyyy-MM-dd")</td>
+                <td>@Model.AccountName(transfer.FromAccountId)</td>
+                <td>@Model.AccountName(transfer.ToAccountId)</td>
+                <td>@Model.Money(transfer)</td>
+                <td>@transfer.Description</td>
+                <td>
+                    <a asp-page="/Transfers" asp-route-id="@transfer.Id">Edit</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@transfer.Id" class="d-inline">
+                        <button type="submit" class="btn btn-link p-0 align-baseline">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</section>
+
+<section class="panel panel-form">
+<h2>@(Model.Id is null ? "New transfer" : "Edit transfer")</h2>
+<form method="post" class="editor">
+    @if (Model.Id is Guid id)
+    {
+        <input type="hidden" name="id" value="@id" />
+    }
+    <div class="mb-3">
+        <label asp-for="Input.FromAccountId"></label>
+        <select asp-for="Input.FromAccountId" asp-items="Model.AccountOptions" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.ToAccountId"></label>
+        <select asp-for="Input.ToAccountId" asp-items="Model.AccountOptions" class="form-select"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Amount"></label>
+        <input asp-for="Input.Amount" class="form-control" type="number" step="0.01" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.Description"></label>
+        <input asp-for="Input.Description" class="form-control" maxlength="500" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.TransferDate"></label>
+        <input asp-for="Input.TransferDate" class="form-control" type="date" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    @if (Model.Id is not null)
+    {
+        <a asp-page="/Transfers" class="ms-2">Cancel</a>
+    }
+</form>
+</section>

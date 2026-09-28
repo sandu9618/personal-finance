@@ -27,6 +27,13 @@ public class TransactionConfiguration: IEntityTypeConfiguration<Transaction>
     builder.HasOne(t => t.Category)
       .WithMany(u => u.Transactions)
       .HasForeignKey(t => t.CategoryId)
+      .IsRequired(false)
+      .OnDelete(DeleteBehavior.Restrict);
+
+    builder.HasOne(t => t.Transfer)
+      .WithMany()
+      .HasForeignKey(t => t.TransferId)
+      .IsRequired(false)
       .OnDelete(DeleteBehavior.Restrict);
 
     builder.HasIndex(t => t.UserId);

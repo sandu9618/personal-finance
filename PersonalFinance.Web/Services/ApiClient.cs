@@ -58,6 +58,18 @@ public class ApiClient
     public Task DeleteTransactionAsync(Guid id, CancellationToken cancellationToken) =>
         DeleteAsync($"api/transaction/{id}", cancellationToken);
 
+    public Task<TransferListResponse> GetTransfersAsync(CancellationToken cancellationToken) =>
+        GetAsync<TransferListResponse>("api/transfer", cancellationToken);
+
+    public Task CreateTransferAsync(TransferRequest request, CancellationToken cancellationToken) =>
+        SendAsync("api/transfer", request, HttpMethod.Post, cancellationToken);
+
+    public Task UpdateTransferAsync(Guid id, TransferRequest request, CancellationToken cancellationToken) =>
+        SendAsync($"api/transfer/{id}", request, HttpMethod.Put, cancellationToken);
+
+    public Task DeleteTransferAsync(Guid id, CancellationToken cancellationToken) =>
+        DeleteAsync($"api/transfer/{id}", cancellationToken);
+
     private async Task<T> GetAsync<T>(string path, CancellationToken cancellationToken)
     {
         using var response = await _http.GetAsync(path, cancellationToken);
@@ -149,7 +161,7 @@ public class ApiClient
 
                 if (parts.Count > 0)
                 {
-                    return string.Join(" ", parts);
+                    return string.Join(" ", parts.Distinct(StringComparer.Ordinal));
                 }
             }
         }

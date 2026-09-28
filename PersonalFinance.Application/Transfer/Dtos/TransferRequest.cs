@@ -13,7 +13,7 @@ public record TransferRequest(
   {
     if (FromAccountId == ToAccountId)
     {
-      yield return new ValidationResult("From and to account cannot be the same", new[] { nameof(FromAccountId), nameof(ToAccountId) });
+      yield return new ValidationResult("From and to account cannot be the same", [nameof(FromAccountId)]);
     }
     if (Amount <= 0)
     {

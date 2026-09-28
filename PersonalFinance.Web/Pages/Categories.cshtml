@@ -56,7 +56,10 @@
     </div>
     <div class="mb-3">
         <label asp-for="Input.Type"></label>
-        <select asp-for="Input.Type" asp-items="Html.GetEnumSelectList<TransactionType>()" class="form-select"></select>
+        <select asp-for="Input.Type" class="form-select">
+            <option value="@((int)TransactionType.Income)">Income</option>
+            <option value="@((int)TransactionType.Expense)">Expense</option>
+        </select>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
     @if (Model.Id is not null)

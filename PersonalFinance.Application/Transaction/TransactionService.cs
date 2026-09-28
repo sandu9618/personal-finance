@@ -1,4 +1,5 @@
 using PersonalFinance.Domain.Entities;
+using PersonalFinance.Domain.Enums;
 
 public class TransactionService : ITransactionService
 {
@@ -21,6 +22,8 @@ public class TransactionService : ITransactionService
   }
   public async Task<TransactionResponse> CreateTransactionAsync(TransactionRequest request, Guid userId, CancellationToken cancellationToken)
   {
+    EnsureNotTransfer(request.Type);
+
     if (request.Amount <= 0)
     {
       throw new InvalidOperationException("Amount must be greater than zero.");
@@ -69,6 +72,7 @@ public class TransactionService : ITransactionService
   public async Task DeleteTransactionAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
     var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
+    EnsureNotTransfer(transaction.Type);
     var signedAmount = TransactionHelper.Signed(transaction.Type, transaction.Amount);
     var account = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {transaction.AccountId} not found");
 
@@ -111,6 +115,8 @@ public class TransactionService : ITransactionService
   public async Task<TransactionResponse> UpdateTransactionAsync(Guid transactionId, Guid userId, TransactionRequest request, CancellationToken cancellationToken)
   {
     var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
+    EnsureNotTransfer(transaction.Type);
+    EnsureNotTransfer(request.Type);
 
     if (request.Amount <= 0)
     {
@@ -156,6 +162,14 @@ public class TransactionService : ITransactionService
       transaction.Description,
       transaction.TransactionDate
     );
+  }
+
+  private static void EnsureNotTransfer(TransactionType type)
+  {
+    if (type is TransactionType.TransferIn or TransactionType.TransferOut)
+    {
+      throw new InvalidOperationException("Transfer transactions can only be changed with their transfer.");
+    }
   }
 
 }

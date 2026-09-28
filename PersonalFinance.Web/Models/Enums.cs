@@ -11,5 +11,7 @@ public enum AccountType
 public enum TransactionType
 {
     Income,
-    Expense
+    Expense,
+    TransferOut,
+    TransferIn
 }

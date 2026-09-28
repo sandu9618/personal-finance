@@ -12,8 +12,8 @@ public class DashboardRepository : IDashboardRepository
   {
     var rows = await _dbContext.Transactions
       .AsNoTracking()
-      .Where(t => t.UserId == userId && t.Type == TransactionType.Expense)
-      .GroupBy(t => new { t.CategoryId, t.Category.Name })
+      .Where(t => t.UserId == userId && t.Type == TransactionType.Expense && t.CategoryId != null)
+      .GroupBy(t => new { t.CategoryId, Name = t.Category!.Name })
       .Select(g => new
       {
         g.Key.CategoryId,
@@ -24,7 +24,7 @@ public class DashboardRepository : IDashboardRepository
       .ToListAsync(cancellationToken);
 
     return rows
-      .Select(row => new ExpenseByCategoryDto(row.CategoryId, row.Name, row.Total))
+      .Select(row => new ExpenseByCategoryDto(row.CategoryId!.Value, row.Name, row.Total))
       .ToList();
   }
 
