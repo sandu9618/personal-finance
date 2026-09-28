@@ -3,5 +3,7 @@ namespace PersonalFinance.Domain.Enums;
 public enum TransactionType
 {
   Income,
-  Expense
+  Expense,
+  TransferOut,
+  TransferIn
 }

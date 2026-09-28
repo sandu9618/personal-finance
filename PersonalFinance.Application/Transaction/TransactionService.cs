@@ -1,5 +1,4 @@
 using PersonalFinance.Domain.Entities;
-using PersonalFinance.Domain.Enums;
 
 public class TransactionService : ITransactionService
 {
@@ -48,7 +47,7 @@ public class TransactionService : ITransactionService
       CreatedAt = DateTime.UtcNow
     };
 
-    var signedAmount = Signed(request.Type, request.Amount);
+    var signedAmount = TransactionHelper.Signed(request.Type, request.Amount);
 
     await _unitOfWork.ExecuteAsync(async ct =>
     {
@@ -59,7 +58,7 @@ public class TransactionService : ITransactionService
     return new TransactionResponse(
       transaction.Id,
       transaction.AccountId,
-      transaction.CategoryId,
+      transaction.CategoryId ?? null,
       transaction.Amount,
       transaction.Type,
       transaction.Description,
@@ -70,7 +69,7 @@ public class TransactionService : ITransactionService
   public async Task DeleteTransactionAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
     var transaction = await _transactionRepository.GetByIdForUserAsync(transactionId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Transaction with ID {transactionId} not found");
-    var signedAmount = Signed(transaction.Type, transaction.Amount);
+    var signedAmount = TransactionHelper.Signed(transaction.Type, transaction.Amount);
     var account = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account with ID {transaction.AccountId} not found");
 
     await _unitOfWork.ExecuteAsync(async ct =>
@@ -118,7 +117,7 @@ public class TransactionService : ITransactionService
       throw new InvalidOperationException("Amount must be greater than zero");
     }
 
-    var oldSignedAmount = Signed(transaction.Type, transaction.Amount);
+    var oldSignedAmount = TransactionHelper.Signed(transaction.Type, transaction.Amount);
 
     var oldAccount = await _accountRepository.GetByIdForUserAsync(transaction.AccountId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Account not found with ID {transaction.AccountId}");
     var newAccount = transaction.AccountId == request.AccountId 
@@ -127,7 +126,7 @@ public class TransactionService : ITransactionService
                       ?? throw new KeyNotFoundException($"Account not found with ID {request.AccountId}");
     var category = await _categoryRepository.GetByIdForUserAsync(request.CategoryId, userId, cancellationToken) ?? throw new KeyNotFoundException($"Category with ID {request.CategoryId} not found.");
 
-    var newSignedAmount = Signed(request.Type, request.Amount);
+    var newSignedAmount = TransactionHelper.Signed(request.Type, request.Amount);
 
     if (request.Type != category.Type)
     {
@@ -159,6 +158,4 @@ public class TransactionService : ITransactionService
     );
   }
 
-  private decimal Signed(TransactionType type, decimal amount) => 
-    type == TransactionType.Income ? amount : -amount;
 }

@@ -10,10 +10,24 @@
     <link rel="stylesheet" href="~/PersonalFinance.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var currentPage = ViewContext.RouteData.Values["page"]?.ToString();
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm mb-4">
             <div class="container">
-                <a class="navbar-brand" asp-page="/Index">Personal Finance</a>
+                <a class="navbar-brand" asp-page="/Index">
+                    <span class="brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <rect x="3" y="8" width="26" height="17" rx="3.5" fill="#1a5c52"/>
+                            <path d="M3 13.5h26" stroke="#0f3f38" stroke-width="3"/>
+                            <circle cx="22.5" cy="19.5" r="2.1" fill="#e4b23c"/>
+                            <path d="M8 6.5c2.2 2.4 2.4 4.2.4 6.2" stroke="#6f9470" stroke-width="1.6" stroke-linecap="round"/>
+                            <path d="M12.2 5.2c1.6 2.2 1.5 3.8.1 5.6" stroke="#6f9470" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    Personal Finance
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -23,16 +37,16 @@
                     {
                         <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Index">Dashboard</a>
+                                <a class="nav-link @(currentPage == "/Index" ? "active" : null)" asp-page="/Index">Dashboard</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Accounts">Accounts</a>
+                                <a class="nav-link @(currentPage == "/Accounts" ? "active" : null)" asp-page="/Accounts">Accounts</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Categories">Categories</a>
+                                <a class="nav-link @(currentPage == "/Categories" ? "active" : null)" asp-page="/Categories">Categories</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Transactions">Transactions</a>
+                                <a class="nav-link @(currentPage == "/Transactions" ? "active" : null)" asp-page="/Transactions">Transactions</a>
                             </li>
                         </ul>
                         <span class="navbar-text me-3">@User.Identity.Name</span>

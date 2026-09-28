@@ -22,6 +22,18 @@ public class TransactionRepository : ITransactionRepository
       .ToListAsync(cancellationToken);
   }
 
+  public async Task<IReadOnlyList<Transaction>> GetByTransferIdsForUserAsync(IReadOnlyCollection<Guid> transferIds, Guid userId, CancellationToken cancellationToken)
+  {
+    if (transferIds.Count == 0)
+    {
+      return [];
+    }
+
+    return await _db.Transactions
+      .Where(t => t.UserId == userId && t.TransferId != null && transferIds.Contains(t.TransferId.Value))
+      .ToListAsync(cancellationToken);
+  }
+
   public Task<Transaction?> GetByIdForUserAsync(Guid transactionId, Guid userId, CancellationToken cancellationToken)
   {
     return _db.Transactions

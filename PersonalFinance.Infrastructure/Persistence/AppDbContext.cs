@@ -12,6 +12,7 @@ public class AppDbContext: IdentityDbContext<ApplicationUser, IdentityRole<Guid>
   public DbSet<Account> Accounts => Set<Account>();
   public DbSet<Category> Categories => Set<Category>();
   public DbSet<Transaction> Transactions => Set<Transaction>();
+  public DbSet<Transfer> Transfers => Set<Transfer>();
 
   protected override void OnModelCreating(ModelBuilder builder)
   {

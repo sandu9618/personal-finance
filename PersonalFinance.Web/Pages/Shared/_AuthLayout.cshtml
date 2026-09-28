@@ -8,10 +8,30 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PersonalFinance.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <div class="container">
-        <main role="main" class="auth-wrap">
-            <a class="auth-mark" asp-page="/Login">Personal Finance</a>
+<body class="auth-body">
+    <div class="auth-shell">
+        <aside class="auth-hero">
+            <div class="auth-hero-inner">
+                <a class="auth-brand" asp-page="/Login">
+                    <span class="brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <rect x="3" y="8" width="26" height="17" rx="3.5" fill="#1a5c52"/>
+                            <path d="M3 13.5h26" stroke="#0f3f38" stroke-width="3"/>
+                            <circle cx="22.5" cy="19.5" r="2.1" fill="#e4b23c"/>
+                            <path d="M8 6.5c2.2 2.4 2.4 4.2.4 6.2" stroke="#6f9470" stroke-width="1.6" stroke-linecap="round"/>
+                            <path d="M12.2 5.2c1.6 2.2 1.5 3.8.1 5.6" stroke="#6f9470" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    Personal Finance
+                </a>
+                <img class="auth-hero-art" src="~/images/finance-hero.png" alt="A teal wallet, gold coins, and charts for food, transport, and savings." />
+                <div class="auth-hero-copy">
+                    <h2>A calmer view of your money.</h2>
+                    <p>Keep income, everyday spending, and savings together, in colors that are easy to read at a glance.</p>
+                </div>
+            </div>
+        </aside>
+        <main role="main" class="auth-main">
             @RenderBody()
         </main>
     </div>

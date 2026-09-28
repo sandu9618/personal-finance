@@ -38,6 +38,7 @@ public static class DependencyInjection
     services.AddScoped<ICategoryRepository, CategoryRepository>();
     services.AddScoped<ITransactionRepository, TransactionRepository>();
     services.AddScoped<IDashboardRepository, DashboardRepository>();
+    services.AddScoped<ITransferRepository, TransferRepository>();
 
     return services;
   }
@@ -50,6 +51,7 @@ public static class DependencyInjection
     services.AddScoped<ITransactionService, TransactionService>();
     services.AddScoped<IUnitOfWork, UnitOfWork>();
     services.AddScoped<IDashboardService, DashboardService>();
+    services.AddScoped<ITransferService, TransferService>();
     return services;
   }
 
