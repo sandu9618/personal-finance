@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using PersonalFinance.Web.Models;
 
 namespace PersonalFinance.Web.Pages;
@@ -14,7 +15,18 @@ public class AccountsModel : FinancePageModel
 
     public AccountResponse[] Accounts { get; private set; } = [];
 
+    public bool HasAnyAccounts { get; private set; }
+
     public Guid? Id { get; private set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Name { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public AccountType? Type { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Currency { get; set; }
 
     [BindProperty]
     public AccountInput Input { get; set; } = new();
@@ -24,10 +36,12 @@ public class AccountsModel : FinancePageModel
         LoadError();
         try
         {
-            Accounts = (await Api.GetAccountsAsync(HttpContext.RequestAborted)).Accounts ?? [];
+            var accounts = (await Api.GetAccountsAsync(HttpContext.RequestAborted)).Accounts ?? [];
+            HasAnyAccounts = accounts.Length > 0;
+            Accounts = Filter(accounts);
             if (id is Guid accountId)
             {
-                var account = Accounts.FirstOrDefault(item => item.Id == accountId);
+                var account = accounts.FirstOrDefault(item => item.Id == accountId);
                 if (account is not null)
                 {
                     Id = account.Id;
@@ -77,7 +91,7 @@ public class AccountsModel : FinancePageModel
                 await Api.CreateAccountAsync(request, HttpContext.RequestAborted);
             }
 
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -94,7 +108,7 @@ public class AccountsModel : FinancePageModel
         try
         {
             await Api.DeleteAccountAsync(id, HttpContext.RequestAborted);
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -104,6 +118,55 @@ public class AccountsModel : FinancePageModel
         {
             return Unreachable(redirect: true);
         }
+    }
+
+    private AccountResponse[] Filter(AccountResponse[] accounts)
+    {
+        IEnumerable<AccountResponse> matches = accounts;
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            var name = Name.Trim();
+            matches = matches.Where(account => account.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (Type is AccountType type)
+        {
+            matches = matches.Where(account => account.Type == type);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Currency))
+        {
+            var currency = Currency.Trim();
+            matches = matches.Where(account => account.Currency.Contains(currency, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return matches.ToArray();
+    }
+
+    private RouteValueDictionary FilterRoute(Guid? id = null)
+    {
+        var route = new RouteValueDictionary();
+        if (id is Guid accountId)
+        {
+            route["id"] = accountId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Name))
+        {
+            route["name"] = Name.Trim();
+        }
+
+        if (Type is AccountType type)
+        {
+            route["type"] = type;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Currency))
+        {
+            route["currency"] = Currency.Trim();
+        }
+
+        return route;
     }
 
     public class AccountInput

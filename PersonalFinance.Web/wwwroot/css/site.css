@@ -426,6 +426,23 @@ label {
   font-weight: 600;
 }
 
+.list-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.list-filter .form-control,
+.list-filter .form-select {
+  min-width: 10rem;
+}
+
+.list-filter .btn {
+  margin-bottom: 0.05rem;
+}
+
 .panel {
   padding: 1.2rem 1.3rem 1.15rem;
   margin-bottom: 1rem;
