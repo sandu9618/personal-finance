@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Routing;
 using PersonalFinance.Web.Models;
 
 namespace PersonalFinance.Web.Pages;
@@ -19,10 +20,34 @@ public class TransactionsModel : FinancePageModel
 
     public TransactionResponse[] Transactions { get; private set; } = [];
 
+    public bool HasAnyTransactions { get; private set; }
+
     public Guid? Id { get; private set; }
+
+    [BindProperty(SupportsGet = true)]
+    public Guid? AccountId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public Guid? CategoryId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public TransactionType? Type { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Description { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    [DataType(DataType.Date)]
+    public DateTime? From { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    [DataType(DataType.Date)]
+    public DateTime? To { get; set; }
 
     [BindProperty]
     public TransactionInput Input { get; set; } = new();
+
+    private TransactionResponse[] _transactions = [];
 
     public List<SelectListItem> AccountOptions => Accounts
         .Select(account => new SelectListItem($"{account.Name} ({account.Currency})", account.Id.ToString()))
@@ -36,11 +61,11 @@ public class TransactionsModel : FinancePageModel
             await LoadAsync();
             if (id is Guid transactionId)
             {
-                var transaction = Transactions.FirstOrDefault(item => item.Id == transactionId);
+                var transaction = _transactions.FirstOrDefault(item => item.Id == transactionId);
                 if (transaction is not null && !CanChange(transaction))
                 {
                     SaveError("Transfer transactions can only be changed with their transfer.");
-                    return RedirectToPage();
+                    return RedirectToPage(FilterRoute());
                 }
 
                 if (transaction is not null)
@@ -98,7 +123,7 @@ public class TransactionsModel : FinancePageModel
                 await Api.CreateTransactionAsync(request, HttpContext.RequestAborted);
             }
 
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -115,7 +140,7 @@ public class TransactionsModel : FinancePageModel
         try
         {
             await Api.DeleteTransactionAsync(id, HttpContext.RequestAborted);
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -150,7 +175,87 @@ public class TransactionsModel : FinancePageModel
         var cancellationToken = HttpContext.RequestAborted;
         Accounts = (await Api.GetAccountsAsync(cancellationToken)).Accounts ?? [];
         Categories = (await Api.GetCategoriesAsync(cancellationToken)).Categories ?? [];
-        Transactions = (await Api.GetTransactionsAsync(cancellationToken)).TransactionResponses ?? [];
+        _transactions = (await Api.GetTransactionsAsync(cancellationToken)).TransactionResponses ?? [];
+        HasAnyTransactions = _transactions.Length > 0;
+        Transactions = Filter(_transactions);
+    }
+
+    private TransactionResponse[] Filter(TransactionResponse[] transactions)
+    {
+        IEnumerable<TransactionResponse> matches = transactions;
+        if (AccountId is Guid accountId)
+        {
+            matches = matches.Where(transaction => transaction.AccountId == accountId);
+        }
+
+        if (CategoryId == Guid.Empty)
+        {
+            matches = matches.Where(transaction => transaction.CategoryId is null);
+        }
+        else if (CategoryId is Guid categoryId)
+        {
+            matches = matches.Where(transaction => transaction.CategoryId == categoryId);
+        }
+
+        if (Type is TransactionType type)
+        {
+            matches = matches.Where(transaction => transaction.Type == type);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Description))
+        {
+            var description = Description.Trim();
+            matches = matches.Where(transaction =>
+                transaction.Description?.Contains(description, StringComparison.OrdinalIgnoreCase) == true);
+        }
+
+        if (From is DateTime from)
+        {
+            matches = matches.Where(transaction => transaction.TransactionDate.Date >= from.Date);
+        }
+
+        if (To is DateTime to)
+        {
+            matches = matches.Where(transaction => transaction.TransactionDate.Date <= to.Date);
+        }
+
+        return matches.ToArray();
+    }
+
+    private RouteValueDictionary FilterRoute()
+    {
+        var route = new RouteValueDictionary();
+        if (AccountId is Guid accountId)
+        {
+            route["accountId"] = accountId;
+        }
+
+        if (CategoryId is Guid categoryId)
+        {
+            route["categoryId"] = categoryId;
+        }
+
+        if (Type is TransactionType type)
+        {
+            route["type"] = type;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Description))
+        {
+            route["description"] = Description.Trim();
+        }
+
+        if (From is DateTime from)
+        {
+            route["from"] = from.ToString("yyyy-MM-dd");
+        }
+
+        if (To is DateTime to)
+        {
+            route["to"] = to.ToString("yyyy-MM-dd");
+        }
+
+        return route;
     }
 
     public class TransactionInput
