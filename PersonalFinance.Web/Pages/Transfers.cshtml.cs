@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Routing;
 using PersonalFinance.Web.Models;
 
 namespace PersonalFinance.Web.Pages;
@@ -17,10 +18,35 @@ public class TransfersModel : FinancePageModel
 
     public TransferResponse[] Transfers { get; private set; } = [];
 
+    public bool HasAnyTransfers { get; private set; }
+
     public Guid? Id { get; private set; }
+
+    [BindProperty(SupportsGet = true)]
+    [Display(Name = "From account")]
+    public Guid? FromAccountId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    [Display(Name = "To account")]
+    public Guid? ToAccountId { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Description { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    [DataType(DataType.Date)]
+    [Display(Name = "From date")]
+    public DateTime? From { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    [DataType(DataType.Date)]
+    [Display(Name = "To date")]
+    public DateTime? To { get; set; }
 
     [BindProperty]
     public TransferInput Input { get; set; } = new();
+
+    private TransferResponse[] _transfers = [];
 
     public List<SelectListItem> AccountOptions => Accounts
         .Select(account => new SelectListItem($"{account.Name} ({account.Currency})", account.Id.ToString()))
@@ -34,7 +60,7 @@ public class TransfersModel : FinancePageModel
             await LoadAsync();
             if (id is Guid transferId)
             {
-                var transfer = Transfers.FirstOrDefault(item => item.Id == transferId);
+                var transfer = _transfers.FirstOrDefault(item => item.Id == transferId);
                 if (transfer is not null)
                 {
                     Id = transfer.Id;
@@ -88,7 +114,7 @@ public class TransfersModel : FinancePageModel
                 await Api.CreateTransferAsync(request, HttpContext.RequestAborted);
             }
 
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -105,7 +131,7 @@ public class TransfersModel : FinancePageModel
         try
         {
             await Api.DeleteTransferAsync(id, HttpContext.RequestAborted);
-            return RedirectToPage();
+            return RedirectToPage(FilterRoute());
         }
         catch (Services.ApiException ex)
         {
@@ -131,7 +157,73 @@ public class TransfersModel : FinancePageModel
     {
         var cancellationToken = HttpContext.RequestAborted;
         Accounts = (await Api.GetAccountsAsync(cancellationToken)).Accounts ?? [];
-        Transfers = (await Api.GetTransfersAsync(cancellationToken)).TransferResponses ?? [];
+        _transfers = (await Api.GetTransfersAsync(cancellationToken)).TransferResponses ?? [];
+        HasAnyTransfers = _transfers.Length > 0;
+        Transfers = Filter(_transfers);
+    }
+
+    private TransferResponse[] Filter(TransferResponse[] transfers)
+    {
+        IEnumerable<TransferResponse> matches = transfers;
+        if (FromAccountId is Guid fromAccountId)
+        {
+            matches = matches.Where(transfer => transfer.FromAccountId == fromAccountId);
+        }
+
+        if (ToAccountId is Guid toAccountId)
+        {
+            matches = matches.Where(transfer => transfer.ToAccountId == toAccountId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Description))
+        {
+            var description = Description.Trim();
+            matches = matches.Where(transfer =>
+                transfer.Description?.Contains(description, StringComparison.OrdinalIgnoreCase) == true);
+        }
+
+        if (From is DateTime from)
+        {
+            matches = matches.Where(transfer => transfer.TransferDate.Date >= from.Date);
+        }
+
+        if (To is DateTime to)
+        {
+            matches = matches.Where(transfer => transfer.TransferDate.Date <= to.Date);
+        }
+
+        return matches.ToArray();
+    }
+
+    private RouteValueDictionary FilterRoute()
+    {
+        var route = new RouteValueDictionary();
+        if (FromAccountId is Guid fromAccountId)
+        {
+            route["fromAccountId"] = fromAccountId;
+        }
+
+        if (ToAccountId is Guid toAccountId)
+        {
+            route["toAccountId"] = toAccountId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Description))
+        {
+            route["description"] = Description.Trim();
+        }
+
+        if (From is DateTime from)
+        {
+            route["from"] = from.ToString("yyyy-MM-dd");
+        }
+
+        if (To is DateTime to)
+        {
+            route["to"] = to.ToString("yyyy-MM-dd");
+        }
+
+        return route;
     }
 
     public class TransferInput
